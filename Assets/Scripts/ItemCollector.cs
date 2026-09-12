@@ -2,23 +2,23 @@ using UnityEngine;
 
 public class ItemCollector : MonoBehaviour
 {
-
-    [SerializeField] private GameObject items;
-    [SerializeField] private ItemCountView itemCountView;
-    private ItemCollectionModel itemCountModel;
-
-    private void Start()
+    private ItemCollectionModel model;
+    public void Bind(ItemCollectionModel targetModel)
     {
-        int totalItemCount = items.transform.childCount;
+        Unbind();
 
-        itemCountModel = new ItemCollectionModel(totalItemCount);
+        model = targetModel;
 
-        itemCountView.RefreshText(
-            itemCountModel.CollectedItemCount,
-            itemCountModel.TotalItemCount
-        );
     }
 
+    public void Unbind()
+    {
+        if (model == null)
+        {
+            return;
+        }
+        model = null;
+    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -27,28 +27,16 @@ public class ItemCollector : MonoBehaviour
             return;
         }
 
-        bool collected = itemCountModel.TryCollect();
+        bool collected = model.TryCollect();
 
         if (!collected)
         {
             return;
         }
-
-        Debug.Log(
-            $"拾取第{itemCountModel.CollectedItemCount}个 Item"
-        );
-
-        itemCountView.RefreshText(
-            itemCountModel.CollectedItemCount,
-            itemCountModel.TotalItemCount
-        );
-
         Destroy(other.gameObject);
-
-        if (itemCountModel.IsCompleted)
-        {
-            Debug.Log("已拾取完所有物品");
-        }
     }
-
+    private void OnDestroy()
+    {
+        Unbind();
+    }
 }
